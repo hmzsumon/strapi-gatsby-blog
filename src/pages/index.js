@@ -1,29 +1,54 @@
-import * as React from "react"
-import { Link } from "gatsby"
-import { StaticImage } from "gatsby-plugin-image"
-
+import React from "react"
+import { Link, graphql } from "gatsby"
+import { GatsbyImage, getImage } from "gatsby-plugin-image"
 import Layout from "../components/layout"
-import Seo from "../components/seo"
 
-const IndexPage = () => (
+const IndexPage = ({ data }) => (
   <Layout>
-    <Seo title="Home" />
     <h1>Hi people</h1>
     <p>Welcome to your new Gatsby site.</p>
     <p>Now go build something great.</p>
-    <StaticImage
-      src="../images/gatsby-astronaut.png"
-      width={300}
-      quality={95}
-      formats={["auto", "webp", "avif"]}
-      alt="A Gatsby astronaut"
-      style={{ marginBottom: `1.45rem` }}
-    />
-    <p>
-      <Link to="/page-2/">Go to page 2</Link> <br />
-      <Link to="/using-typescript/">Go to "Using TypeScript"</Link>
-    </p>
+    <ul>
+      {data.allStrapiArticles.edges.map(document => (
+        <li key={document.node.id}>
+          <h2>
+            <Link to={`/${document.node.id}`}>{document.node.title}</Link>
+          </h2>
+          <GatsbyImage
+            image={getImage(document.node.image.localFile)}
+            alt={document.node.title}
+          />
+          <p>{document.node.content}</p>
+        </li>
+      ))}
+    </ul>
+    <Link to="/page-2/">Go to page 2</Link>
   </Layout>
 )
 
 export default IndexPage
+
+export const pageQuery = graphql`
+  query IndexQuery {
+    allStrapiArticles {
+      edges {
+        node {
+          id
+          image {
+            localFile {
+              childImageSharp {
+                gatsbyImageData(
+                  layout: CONSTRAINED
+                  placeholder: TRACED_SVG
+                  width: 200
+                )
+              }
+            }
+          }
+          title
+          content
+        }
+      }
+    }
+  }
+`
